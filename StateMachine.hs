@@ -1,6 +1,5 @@
 module StateMachine where
 
-import SDL.Input.Keyboard (Keycode(..))
 import SDL
 import qualified SDL.Event as Event
 import SDL.Input.Keyboard
@@ -12,7 +11,7 @@ data KeyMap = KeyMap {
 
 data StateMachine = StateMachine {
     keys :: [KeyMap],       -- Liste des touches valides
-    states :: [[String]],   -- États intermédiaires (non utilisé ici)
+    states :: [[[String]]],   -- États intermédiaires (non utilisé ici)
     final_states :: [String] -- États finaux (non utilisé ici)
 } deriving (Show)
 

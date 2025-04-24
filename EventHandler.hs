@@ -4,14 +4,15 @@ import SDL
 import qualified SDL.Event as Event
 import SDL.Input.Keyboard
 import StateMachine
+import Utils
 import Data.List (nub, (\\))
 
 -- Fonction pour détecter les inputs valides
 handleEvents :: StateMachine -> [Keycode] -> IO ([Keycode], Bool)
-handleEvents (StateMachine keyMappings _ _) pressedBuffer = do
+handleEvents stateMachine pressedBuffer = do
     events <- pollEvents
     let quitEvent = any isQuitEvent events
-    let validKeys = map (charToKeycode . keyCode) keyMappings -- Convertir les chars en Keycode
+    let validKeys = map (charToKeycode . keyCode) (keys stateMachine) -- Convertir les chars en Keycode
 
     -- Récupérer les touches pressées et relâchées
     let pressedKeys = [keysymKeycode (keyboardEventKeysym e) | Event.KeyboardEvent e <- map eventPayload events, keyboardEventKeyMotion e == Pressed]
@@ -26,11 +27,13 @@ handleEvents (StateMachine keyMappings _ _) pressedBuffer = do
     -- Détecter les touches valides relâchées
     let detectedReleasedKeys = filter (`elem` validKeys) releasedKeys
 
-    -- Afficher le buffer uniquement lorsqu'une touche est relâchée
+    -- Appeler une fonction pour obtenir les prochaines touches possibles pour un combo
     if not (null detectedReleasedKeys)
         then do
             putStrLn $ "Released keys: " ++ show detectedReleasedKeys
             putStrLn $ "Buffer before clearing: " ++ show pressedBuffer
+            let nextPossibleCombos = getNextPossibleKeys stateMachine detectedReleasedKeys
+            putStrLn $ "Next possible combos: " ++ show nextPossibleCombos
         else return ()
 
     return (updatedBuffer, quitEvent)
