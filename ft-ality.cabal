@@ -21,7 +21,8 @@ executable ft-ality
   other-modules:       StateMachine,
                        EventHandler,
                        Utils
-  build-depends:       base >=4.13 && <4.14,
+  build-depends:       base >= 4.17 && < 4.18,
+                       split,
                        sdl2
   hs-source-dirs:      .
   default-language:    Haskell2010

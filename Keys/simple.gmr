@@ -1,0 +1,14 @@
+UP = z
+DOWN = s
+LEFT = a
+RIGHT = d
+PUNCH = p
+KICK = k
+
+Uppercut = DOWN + DOWN
+Upperkick = DOWN , UP , KICK
+Hook = RIGHT + PUNCH
+Lowkick = DOWN + KICK
+Highkick = UP + KICK
+Reversekick = LEFT , UP + KICK
+Reversekick2 = LEFT , UP + KICK

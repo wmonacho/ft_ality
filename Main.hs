@@ -8,9 +8,26 @@ import SDL.Input.Keyboard
 import StateMachine
 import EventHandler
 import Utils
+import Parser
+import System.IO
 
 main :: IO ()
 main = do
+    -- Parsing of the file
+    h <- openFile "Keys/simple.gmr" ReadMode 
+    processed_key <- processKeys h
+    processed_combo <- processCombos h
+    let finals = generateFinals processed_combo
+    let moves = generateMoves processed_combo
+    let state_machine = (StateMachine processed_key moves finals)
+    hClose h
+
+    -- Exemple of get state functions
+    let key = ["DOWN"]
+    print key
+    res <- getStatesByKeys (states state_machine) key False
+    print res
+
     initializeAll
 
     -- Exemple de StateMachine
