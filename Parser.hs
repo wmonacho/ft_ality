@@ -6,27 +6,6 @@ import Data.List
 import Data.List.Split (splitOn)
 import Data.Char (isSpace, isAlphaNum)
 
--- data SingleState = SingleState {
---     -- s_name :: String,
---     tr :: [String]
--- } deriving (Show)
--- 
--- data Transition = Transition {
---     t_name :: String,
---     isEnd :: Bool
--- } deriving (Show)
--- 
--- data KeyMap = KeyMap {
---     keyCode :: Char,
---     keyName :: String
--- } deriving (Show)
--- 
--- data StateMachine = StateMachine {
---     keys :: [KeyMap],
---     states :: [[[String]]],
---     final_states :: [String]
--- } deriving (Show)
-
 removeAllWhitespace :: String -> String
 removeAllWhitespace = filter (not . isSpace)
 
@@ -88,38 +67,6 @@ generateFinals combos = map fst combos
 generateMoves :: [Combo] -> [[[String]]]
 generateMoves combos = map snd combos
 
-getStatesByKeys :: [[[String]]] -> [String] -> Bool -> IO [[[String]]]
-getStatesByKeys [] _ _ = return []
-getStatesByKeys (x:xs) key remove_first = do
-    let first = (head x)
-    if first == key then do
-        rest <- getStatesByKeys xs key remove_first
-        if remove_first == False then
-            return (x : rest)
-        else
-            return (tail x : rest)
-    else do
-        rest <- getStatesByKeys xs key remove_first
-        return rest
-
 mergeComboLists :: [[[String]]] -> [[[String]]] -> IO [[[String]]]
 mergeComboLists [] [] = return []
 mergeComboLists list_a list_b = return (list_a ++ list_b)
-
--- main :: IO ()
--- main = do
---     h <- openFile "Keys/simple.gmr" ReadMode 
---     processed_key <- processKeys h
---     processed_combo <- processCombos h
---     let finals = generateFinals processed_combo
---     let moves = generateMoves processed_combo
---     let state_machine = (StateMachine processed_key moves finals)
---     print (moves)
---     -- print state_machine
---     let key = ["DOWN"]
---     print key
---     res <- getStatesByKeys (states state_machine) key False
---     print res
---     -- res2 <- mergeComboLists res res
---     -- print res2
---     hClose h

@@ -15,7 +15,7 @@ data StateMachine = StateMachine {
     final_states :: [String] -- États finaux (non utilisé ici)
 } deriving (Show)
 
--- Convertit un Char en Keycode SDL
+-- Convertit un Char en Keycode SDL (alphanum uniquement)
 charToKeycode :: Char -> Keycode
 charToKeycode 'a' = KeycodeA
 charToKeycode 'b' = KeycodeB
@@ -53,40 +53,44 @@ charToKeycode '6' = Keycode6
 charToKeycode '7' = Keycode7
 charToKeycode '8' = Keycode8
 charToKeycode '9' = Keycode9
-charToKeycode ' ' = KeycodeSpace
-charToKeycode '\t' = KeycodeTab
-charToKeycode '\n' = KeycodeReturn
-charToKeycode '\r' = KeycodeReturn
-charToKeycode ',' = KeycodeComma
-charToKeycode '.' = KeycodePeriod
-charToKeycode '/' = KeycodeSlash
-charToKeycode ';' = KeycodeSemicolon
-charToKeycode '\'' = KeycodeUnknown
-charToKeycode '[' = KeycodeLeftBracket
-charToKeycode ']' = KeycodeRightBracket
-charToKeycode '\\' = KeycodeBackslash
-charToKeycode '-' = KeycodeMinus
-charToKeycode '=' = KeycodeEquals
-charToKeycode '`' = KeycodeBackquote
-charToKeycode '!' = Keycode1
-charToKeycode '@' = Keycode2
-charToKeycode '#' = Keycode3
-charToKeycode '$' = Keycode4
-charToKeycode '%' = Keycode5
-charToKeycode '^' = Keycode6
-charToKeycode '&' = Keycode7
-charToKeycode '*' = Keycode8
-charToKeycode '(' = Keycode9
-charToKeycode ')' = Keycode0
-charToKeycode '_' = KeycodeMinus
-charToKeycode '+' = KeycodeEquals
-charToKeycode '{' = KeycodeLeftBracket
-charToKeycode '}' = KeycodeRightBracket
-charToKeycode '|' = KeycodeBackslash
-charToKeycode ':' = KeycodeSemicolon
-charToKeycode '"' = KeycodeUnknown
-charToKeycode '<' = KeycodeComma
-charToKeycode '>' = KeycodePeriod
-charToKeycode '?' = KeycodeSlash
-charToKeycode '~' = KeycodeBackquote
 charToKeycode _   = KeycodeUnknown
+
+-- Convertit un Keycode SDL en Char (alphanum uniquement)
+keycodeToChar :: Keycode -> Char
+keycodeToChar KeycodeA = 'a'
+keycodeToChar KeycodeB = 'b'
+keycodeToChar KeycodeC = 'c'
+keycodeToChar KeycodeD = 'd'
+keycodeToChar KeycodeE = 'e'
+keycodeToChar KeycodeF = 'f'
+keycodeToChar KeycodeG = 'g'
+keycodeToChar KeycodeH = 'h'
+keycodeToChar KeycodeI = 'i'
+keycodeToChar KeycodeJ = 'j'
+keycodeToChar KeycodeK = 'k'
+keycodeToChar KeycodeL = 'l'
+keycodeToChar KeycodeM = 'm'
+keycodeToChar KeycodeN = 'n'
+keycodeToChar KeycodeO = 'o'
+keycodeToChar KeycodeP = 'p'
+keycodeToChar KeycodeQ = 'q'
+keycodeToChar KeycodeR = 'r'
+keycodeToChar KeycodeS = 's'
+keycodeToChar KeycodeT = 't'
+keycodeToChar KeycodeU = 'u'
+keycodeToChar KeycodeV = 'v'
+keycodeToChar KeycodeW = 'w'
+keycodeToChar KeycodeX = 'x'
+keycodeToChar KeycodeY = 'y'
+keycodeToChar KeycodeZ = 'z'
+keycodeToChar Keycode0 = '0'
+keycodeToChar Keycode1 = '1'
+keycodeToChar Keycode2 = '2'
+keycodeToChar Keycode3 = '3'
+keycodeToChar Keycode4 = '4'
+keycodeToChar Keycode5 = '5'
+keycodeToChar Keycode6 = '6'
+keycodeToChar Keycode7 = '7'
+keycodeToChar Keycode8 = '8'
+keycodeToChar Keycode9 = '9'
+keycodeToChar _ = '?'

@@ -10,6 +10,7 @@ import EventHandler
 import Utils
 import Parser
 import System.IO
+import Data.List (nub)
 
 main :: IO ()
 main = do
@@ -20,30 +21,16 @@ main = do
     let finals = generateFinals processed_combo
     let moves = generateMoves processed_combo
     let state_machine = (StateMachine processed_key moves finals)
+    let combos_init = states state_machine
     hClose h
 
-    -- Exemple of get state functions
-    let key = ["DOWN"]
-    print key
-    res <- getStatesByKeys (states state_machine) key False
-    print res
-
     initializeAll
-
-    -- Exemple de StateMachine
-    let keyMappings = [KeyMap 'w' "Up", KeyMap 's' "Down", KeyMap 'a' "Left", KeyMap 'd' "Right"]
-    let states = [
-            [["Up", "Down"], ["Up", "Left"]],
-            [["Down", "Right"]],
-            [["Left", "Right"]]
-            ]
-    let stateMachine = StateMachine keyMappings states []
 
     -- Création de la fenêtre
     window <- createWindow "Key Input Detector" defaultWindow
 
     -- Lancement de la boucle principale
-    appLoop stateMachine []
+    appLoop state_machine [] [] combos_init False
 
     -- Fermeture de la fenêtre
     destroyWindow window

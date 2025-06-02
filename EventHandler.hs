@@ -5,40 +5,77 @@ import qualified SDL.Event as Event
 import SDL.Input.Keyboard
 import StateMachine
 import Utils
-import Data.List (nub, (\\))
+import Data.List (nub, (\\), isPrefixOf)
+import Data.Char (toUpper)
 
--- Fonction pour détecter les inputs valides
-handleEvents :: StateMachine -> [Keycode] -> IO ([Keycode], Bool)
-handleEvents stateMachine pressedBuffer = do
+type ComboProgress = [Int] -- Un index par combo
+
+handleEvents :: StateMachine -> [Keycode] -> [[String]] -> [[[String]]] -> Bool -> IO ([Keycode], Bool, [[String]], [[[String]]], Bool)
+handleEvents stateMachine pressedBuffer stepBuffer combos debug = do
     events <- pollEvents
     let quitEvent = any isQuitEvent events
-    let validKeys = map (charToKeycode . keyCode) (keys stateMachine) -- Convertir les chars en Keycode
+    let validKeys = map (charToKeycode . keyCode) (keys stateMachine)
 
-    -- Récupérer les touches pressées et relâchées
     let pressedKeys = [keysymKeycode (keyboardEventKeysym e) | Event.KeyboardEvent e <- map eventPayload events, keyboardEventKeyMotion e == Pressed]
     let releasedKeys = [keysymKeycode (keyboardEventKeysym e) | Event.KeyboardEvent e <- map eventPayload events, keyboardEventKeyMotion e == Released]
 
-    -- Filtrer les touches pressées pour ne garder que les touches valides
     let filteredPressedKeys = filter (`elem` validKeys) pressedKeys
-
-    -- Mettre à jour le buffer des touches pressées
     let updatedBuffer = nub $ (pressedBuffer ++ filteredPressedKeys) \\ releasedKeys
-
-    -- Détecter les touches valides relâchées
     let detectedReleasedKeys = filter (`elem` validKeys) releasedKeys
 
-    -- Appeler une fonction pour obtenir les prochaines touches possibles pour un combo
-    if not (null detectedReleasedKeys)
+    let combos_init = states stateMachine
+    let releasedKeyNames = getKeyName detectedReleasedKeys stateMachine
+    let maxComboLen = maximum (map (\c -> length c - 1) combos_init)
+    let trimToMax xs = drop (length xs - maxComboLen) xs
+
+    let mKeyPressed = KeycodeM `elem` releasedKeys
+    let newDebug = if mKeyPressed then not debug else debug
+
+    let tryBuffer = if not (null releasedKeyNames) then trimToMax (stepBuffer ++ [releasedKeyNames]) else stepBuffer
+
+    -- Vérifier si le buffer courant est préfixe d'un combo 
+    let isValid buf = any (\combo -> buf `isStepPrefixOf` (init combo)) combos_init
+    let appendAndTrim xs x = trimToMax (xs ++ [x])
+    let newStepBuffer
+            | null releasedKeyNames = stepBuffer
+            | isValid tryBuffer     = tryBuffer
+            | otherwise             = appendAndTrim stepBuffer releasedKeyNames
+
+    -- Affichage
+    let nextCombos = combos
+
+
+    if not (null releasedKeyNames)
         then do
-            putStrLn $ "Released keys: " ++ show detectedReleasedKeys
-            putStrLn $ "Buffer before clearing: " ++ show pressedBuffer
-            let nextPossibleCombos = getNextPossibleKeys stateMachine detectedReleasedKeys
-            putStrLn $ "Next possible combos: " ++ show nextPossibleCombos
+            let nextCombos = nextCombosDisplay newStepBuffer combos
+
+            let matchedCombos = filter
+                    (\combo ->
+                        length combo == 1 &&
+                        last (last combo) `elem` final_states stateMachine
+                    )
+                    nextCombos
+            if debug
+                then do
+                    putStrLn $ "Released key names: " ++ show releasedKeyNames
+                    putStrLn $ "Combos: " ++ show combos
+                    putStrLn $ "New Step Buffer: " ++ show newStepBuffer
+                    putStrLn "Prochaines transitions possibles :"
+                    mapM_ print nextCombos
+                    putStrLn $ "Matched Combos: " ++ show matchedCombos
+                else return ()
+            if not (null matchedCombos)
+                then do
+                    let finals = map (last . last) matchedCombos
+                    mapM_ (\final ->
+                        if final `elem` final_states stateMachine
+                            then putStrLn $ rainbow (map toUpper final)
+                            else return ()
+                        ) finals
+                else return ()
         else return ()
+    return (updatedBuffer, quitEvent, newStepBuffer, nextCombos, newDebug)
 
-    return (updatedBuffer, quitEvent)
-
--- Vérifie si un événement est une demande de quitter
 isQuitEvent :: Event -> Bool
 isQuitEvent event =
     case eventPayload event of
@@ -47,10 +84,9 @@ isQuitEvent event =
             keysymKeycode (keyboardEventKeysym keyboardEvent) == KeycodeEscape
         _ -> False
 
--- Boucle principale de l'application
-appLoop :: StateMachine -> [Keycode] -> IO ()
-appLoop stateMachine pressedBuffer = do
-    (updatedBuffer, quit) <- handleEvents stateMachine pressedBuffer
+appLoop :: StateMachine -> [Keycode] -> [[String]] -> [[[String]]] -> Bool -> IO ()
+appLoop stateMachine pressedBuffer stepBuffer combos_init debug  = do
+    (updatedBuffer, quit, newStepBuffer, combos, debug) <- handleEvents stateMachine pressedBuffer stepBuffer combos_init debug 
     if quit
         then putStrLn "Quit event detected. Exiting..."
-        else appLoop stateMachine updatedBuffer
+        else appLoop stateMachine updatedBuffer newStepBuffer combos debug
