@@ -9,8 +9,6 @@ import Utils
 import Data.List (nub, (\\), isPrefixOf)
 import Data.Char (toUpper)
 
-type ComboProgress = [Int] -- Un index par combo
-
 handleEvents :: StateMachine -> [Keycode] -> [[String]] -> [[[String]]] -> Bool -> IO ([Keycode], Bool, [[String]], [[[String]]], Bool)
 handleEvents stateMachine pressedBuffer stepBuffer combos debug = do
     events <- pollEvents
@@ -65,7 +63,7 @@ handleEvents stateMachine pressedBuffer stepBuffer combos debug = do
                     putStrLn "Prochaines transitions possibles :"
                     mapM_ print nextCombos
                     putStrLn $ "Matched Combos: " ++ show matchedCombos
-                else putStrLn $ "Pressed: " ++ show releasedKeyNames
+                else return ()
             if not (null matchedCombos)
                 then do
                     let finals = map (last . last) matchedCombos
@@ -74,14 +72,14 @@ handleEvents stateMachine pressedBuffer stepBuffer combos debug = do
                             then putStrLn $ rainbow (map toUpper final)
                             else return ()
                         ) finals
-                else return ()
+                else return ()                                                              
         else return ()
     return (updatedBuffer, quitEvent, newStepBuffer, nextCombos, newDebug)
 
 isQuitEvent :: Event -> Bool
 isQuitEvent event =
     case eventPayload event of
-        QuitEvent -> True
+        QuitEvent -> True                                                                                                                                                                                                                                                                                                                                                                                                   
         KeyboardEvent keyboardEvent ->
             keysymKeycode (keyboardEventKeysym keyboardEvent) == KeycodeEscape
         _ -> False
