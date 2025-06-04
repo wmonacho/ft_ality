@@ -17,9 +17,15 @@ main = do
     -- Parsing of the file
     h <- openFile "Keys/simple.gmr" ReadMode 
     processed_key <- processKeys h
+    hasDuplicateNames (map keyName processed_key)
+    hasDuplicateKeys (map keyCode processed_key)
     processed_combo <- processCombos h
     let finals = generateFinals processed_combo
     let moves = generateMoves processed_combo
+    print (map keyName processed_key)
+    print finals
+    print moves
+    validateNestedMoves ((map keyName processed_key) ++ finals) moves
     let state_machine = (StateMachine processed_key moves finals)
     let combos_init = states state_machine
     hClose h

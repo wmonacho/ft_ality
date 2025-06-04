@@ -5,11 +5,11 @@ RIGHT = d
 PUNCH = p
 KICK = k
 
-Uppercut = DOWN + DOWN
+Uppercut = DOWN , DOWN
 Upperkick = DOWN , UP , KICK
 Hook = RIGHT + PUNCH
 Lowkick = DOWN + KICK + UP
 Highkick = UP + KICK
 Reversekick = LEFT , UP , KICK
 Reversekick2 = LEFT , LEFT , KICK
-Reversekick = LEFT , UP , KICK
+Reversekick = LEFT , UP , PUNCH

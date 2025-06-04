@@ -70,3 +70,23 @@ generateMoves combos = map snd combos
 mergeComboLists :: [[[String]]] -> [[[String]]] -> IO [[[String]]]
 mergeComboLists [] [] = return []
 mergeComboLists list_a list_b = return (list_a ++ list_b)
+
+hasDuplicateNames :: [String] -> IO ()
+hasDuplicateNames xs = 
+    if length xs /= length (nub xs)
+        then error ("Duplicated Key name")
+        else return ()
+
+hasDuplicateKeys :: String -> IO ()
+hasDuplicateKeys xs = 
+    if length xs /= length (nub xs)
+        then error ("Duplicated Key code " ++ xs)
+        else return ()
+
+validateNestedMoves :: [String] -> [[[String]]] -> IO ()
+validateNestedMoves valid_names nested = do
+    let used_names = concatMap concat nested
+    let invalid_names = filter (`notElem` valid_names) used_names
+    if null invalid_names
+        then return ()
+        else error $ "Invalid names found: " ++ show (nub invalid_names)
