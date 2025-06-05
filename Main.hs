@@ -22,9 +22,6 @@ main = do
     processed_combo <- processCombos h
     let finals = generateFinals processed_combo
     let moves = generateMoves processed_combo
-    print (map keyName processed_key)
-    print finals
-    print moves
     validateNestedMoves ((map keyName processed_key) ++ finals) moves
     let state_machine = (StateMachine processed_key moves finals)
     let combos_init = states state_machine
