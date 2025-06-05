@@ -34,6 +34,7 @@ parseCombos line = do
     case cleaned of
         [combo_name, rest] -> do
             let final_splited = map (splitOn "+") (splitOn "," rest)
+            mapM_ hasDuplicateNames final_splited
             if null combo_name || not (all isAlphaNum combo_name) || any (any null) final_splited then error ("Invalid line format: " ++ line)
             else return (combo_name, final_splited ++ [[combo_name]])
         _ -> error ("Invalid line format: " ++ line)

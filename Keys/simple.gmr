@@ -6,7 +6,7 @@ PUNCH = p
 KICK = k
 KICK2 = i
 
-Uppercut = DOWN + DOWN
+Uppercut = DOWN + UP , DOWN
 Upperkick = DOWN , UP , KICK
 Hook = RIGHT + PUNCH
 Lowkick = DOWN+KICK+UP

@@ -20,7 +20,8 @@ executable ft-ality
   main-is:             Main.hs
   other-modules:       StateMachine,
                        EventHandler,
-                       Utils
+                       Utils,
+                       Parser
   build-depends:       base >= 4.13 && < 4.18,
                        split,
                        sdl2
