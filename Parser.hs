@@ -89,4 +89,4 @@ validateNestedMoves valid_names nested = do
     let invalid_names = filter (`notElem` valid_names) used_names
     if null invalid_names
         then return ()
-        else error $ "Invalid names found: " ++ show (nub invalid_names)
+        else error ("Invalid names found: " ++ show (nub invalid_names))
