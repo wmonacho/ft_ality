@@ -17,6 +17,7 @@ main = do
     -- Parsing of the file
     h <- openFile "Keys/simple.gmr" ReadMode 
     processed_key <- processKeys h
+    print processed_key
     hasDuplicateNames (map keyName processed_key)
     hasDuplicateKeys (map keyCode processed_key)
     processed_combo <- processCombos h

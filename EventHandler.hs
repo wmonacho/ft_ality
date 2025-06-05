@@ -1,6 +1,7 @@
 module EventHandler where
 
 import SDL
+import SDL.Time
 import qualified SDL.Event as Event
 import SDL.Input.Keyboard
 import StateMachine
@@ -44,6 +45,7 @@ handleEvents stateMachine pressedBuffer stepBuffer combos debug = do
     -- Affichage
     let nextCombos = combos
 
+    delay 25
 
     if not (null releasedKeyNames)
         then do

@@ -10,12 +10,11 @@ data KeyMap = KeyMap {
 } deriving (Show)
 
 data StateMachine = StateMachine {
-    keys :: [KeyMap],       -- Liste des touches valides
-    states :: [[[String]]],   -- États intermédiaires (non utilisé ici)
-    final_states :: [String] -- États finaux (non utilisé ici)
+    keys :: [KeyMap],
+    states :: [[[String]]],
+    final_states :: [String]
 } deriving (Show)
 
--- Convertit un Char en Keycode SDL (alphanum uniquement)
 charToKeycode :: Char -> Keycode
 charToKeycode 'a' = KeycodeA
 charToKeycode 'b' = KeycodeB
@@ -55,7 +54,6 @@ charToKeycode '8' = Keycode8
 charToKeycode '9' = Keycode9
 charToKeycode _   = KeycodeUnknown
 
--- Convertit un Keycode SDL en Char (alphanum uniquement)
 keycodeToChar :: Keycode -> Char
 keycodeToChar KeycodeA = 'a'
 keycodeToChar KeycodeB = 'b'
