@@ -7,11 +7,30 @@ import Data.List.Split (splitOn)
 import Data.Char (isSpace, isAlphaNum)
 
 removeAllWhitespace :: String -> String
-removeAllWhitespace = filter (not . isSpace)
+removeAllWhitespace = f . f
+    where f = reverse . dropWhile isSpace
+
+removeSpacesAroundSpecials :: String -> String
+removeSpacesAroundSpecials = go Nothing
+  where
+    specials = "+,="
+    isSpecial c = c `elem` specials
+    go :: Maybe Char -> String -> String
+    go _ [] = []
+    go prev (c:cs)
+      | isSpace c =
+          case (prev, cs) of
+            (Just p, n:_) | isSpecial p -> go prev cs
+            (_, n:_) | isSpecial n -> go prev cs
+            _ -> c : go (Just c) cs
+      | otherwise = c : go (Just c) cs
 
 parseKey :: String -> IO KeyMap
 parseKey line = do
-    let splited = splitOn "=" line
+    let new_line = removeSpacesAroundSpecials line
+    print new_line
+    print line
+    let splited = splitOn "=" new_line
     let cleaned = map removeAllWhitespace splited
     case cleaned of
         [key_name, [c]] | isAlphaNum c && all isAlphaNum key_name -> return (KeyMap c key_name)
@@ -29,12 +48,12 @@ addEllList xs v = [v] ++ xs
 
 parseCombos :: String -> IO (String, [[String]])
 parseCombos line = do
-    let splited = splitOn "=" line
+    let new_line = removeSpacesAroundSpecials line
+    let splited = splitOn "=" new_line
     let cleaned = map removeAllWhitespace splited
     case cleaned of
         [combo_name, rest] -> do
             let final_splited = map (splitOn "+") (splitOn "," rest)
-            mapM_ hasDuplicateNames final_splited
             if null combo_name || not (all isAlphaNum combo_name) || any (any null) final_splited then error ("Invalid line format: " ++ line)
             else return (combo_name, final_splited ++ [[combo_name]])
         _ -> error ("Invalid line format: " ++ line)

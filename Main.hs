@@ -35,7 +35,7 @@ runProgram file = do
     hClose h
     initializeAll
     putStrLn "Key maps:"
-    printKeyMaps processed_key
+    --printKeyMaps processed_key
     window <- createWindow "Key Input Detector" defaultWindow
     appLoop state_machine [] [] combos_init False
     destroyWindow window

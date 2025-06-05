@@ -65,7 +65,7 @@ handleEvents stateMachine pressedBuffer stepBuffer combos debug = do
                     putStrLn "Prochaines transitions possibles :"
                     mapM_ print nextCombos
                     putStrLn $ "Matched Combos: " ++ show matchedCombos
-                else return ()
+                else putStrLn $ "Pressed: " ++ show releasedKeyNames
             if not (null matchedCombos)
                 then do
                     let finals = map (last . last) matchedCombos
