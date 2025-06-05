@@ -28,8 +28,6 @@ removeSpacesAroundSpecials = go Nothing
 parseKey :: String -> IO KeyMap
 parseKey line = do
     let new_line = removeSpacesAroundSpecials line
-    print new_line
-    print line
     let splited = splitOn "=" new_line
     let cleaned = map removeAllWhitespace splited
     case cleaned of
@@ -76,10 +74,13 @@ processCombos h = do
     if is_eof
         then return []
     else do
-        xs <- hGetLine h
-        r <- parseCombos xs
-        rest <- processCombos h
-        return (r : rest)
+        line <- hGetLine h
+        if null (removeAllWhitespace line)
+            then processCombos h
+            else do
+                r <- parseCombos line
+                rest <- processCombos h
+                return (r : rest)
 
 generateFinals :: [Combo] -> [String]
 generateFinals combos = map fst combos

@@ -4,9 +4,9 @@ LEFT = a
 RIGHT = d
 PUNCH = p
 KICK = k
-KICK2 = i
+KICK2=i
 
-Uppercut = DOWN + UP , DOWN
+Uppercut=KICK2,UP,DOWN
 Upperkick = DOWN , UP , KICK
 Hook = RIGHT + PUNCH
 Lowkick = DOWN + KICK + UP
