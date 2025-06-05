@@ -38,4 +38,3 @@ main = do
     -- Fermeture de la fenêtre
     destroyWindow window
     quit
-    quit
