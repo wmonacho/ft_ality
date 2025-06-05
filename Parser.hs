@@ -14,7 +14,7 @@ parseKey line = do
     let splited = splitOn "=" line
     let cleaned = map removeAllWhitespace splited
     case cleaned of
-        [key_name, [c]] | isAlphaNum c -> return (KeyMap c key_name)
+        [key_name, [c]] | isAlphaNum c && all isAlphaNum key_name -> return (KeyMap c key_name)
         _ -> error ("Invalid line format: " ++ line)
 
 splitCombo :: [String] -> String -> [String]
@@ -34,7 +34,7 @@ parseCombos line = do
     case cleaned of
         [combo_name, rest] -> do
             let final_splited = map (splitOn "+") (splitOn "," rest)
-            if null combo_name || any (any null) final_splited then error ("Invalid line format: " ++ line)
+            if null combo_name || not (all isAlphaNum combo_name) || any (any null) final_splited then error ("Invalid line format: " ++ line)
             else return (combo_name, final_splited ++ [[combo_name]])
         _ -> error ("Invalid line format: " ++ line)
 
