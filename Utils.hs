@@ -6,6 +6,8 @@ import qualified SDL.Event as Event
 import SDL.Input.Keyboard
 import StateMachine
 
+
+-- recupere les noms des touches à partir de leurs Keycodes
 getKeyName :: [Keycode] -> StateMachine -> [String]
 getKeyName keycodes (StateMachine keyMaps _ _) =
     let chars = map keycodeToChar keycodes
@@ -13,32 +15,39 @@ getKeyName keycodes (StateMachine keyMaps _ _) =
                     Just name -> name
                     Nothing   -> "Unknown") chars
 
+-- recherche le nom d'une touche à partir de son caractère
 lookupKeyName :: Char -> [KeyMap] -> Maybe String
 lookupKeyName char keyMaps =
     case filter (\km -> keyCode km == char) keyMaps of
         (km:_) -> Just (keyName km)
         []     -> Nothing
 
+-- vérifie si une liste de chaînes de caractères est préfixe d'une autre liste de chaînes de caractères
 isStepPrefixOf :: [[String]] -> [[String]] -> Bool
 isStepPrefixOf [] _ = True
 isStepPrefixOf _ [] = False
 isStepPrefixOf (x:xs) (y:ys) = sort x == sort y && isStepPrefixOf xs ys
 
+-- applique des couleurs à une chaîne de caractères pour l'affichage dans le terminal
 rainbow :: String -> String
 rainbow str = concat $ zipWith (\c color -> "\x1b[" ++ show color ++ "m" ++ [c]) str (cycle [31,33,32,36,34,35,37]) ++ ["\x1b[0m"]
 
+
+-- cree les combos commencés à partir du buffer courant
 startedCombos :: [[String]] -> [[[String]]] -> [[[String]]]
 startedCombos buffer combos =
     nub [ drop (length suff) combo
         | combo <- combos
         , suff <- nonEmptySuffixes buffer
-        , suff `isStepPrefixOf` combo
+        , isStepPrefixOf suff combo
         ]
   where
     nonEmptySuffixes xs = filter (not . null) (tails xs)
 
+-- retourne toutes les combinaisons
 allCombos :: [[[String]]] -> [[[String]]]
 allCombos = id
 
+-- Affiche les prochaines combinaisons possibles ++ toutes les combinaisons de depart
 nextCombosDisplay :: [[String]] -> [[[String]]] -> [[[String]]]
 nextCombosDisplay buffer combos = nub (startedCombos buffer combos ++ allCombos combos)

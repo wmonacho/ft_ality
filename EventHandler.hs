@@ -18,11 +18,14 @@ handleEvents stateMachine pressedBuffer stepBuffer combos debug = do
     let pressedKeys = [keysymKeycode (keyboardEventKeysym e) | Event.KeyboardEvent e <- map eventPayload events, keyboardEventKeyMotion e == Pressed]
     let releasedKeys = [keysymKeycode (keyboardEventKeysym e) | Event.KeyboardEvent e <- map eventPayload events, keyboardEventKeyMotion e == Released]
 
+    -- verifie que les touches pressées sont dans la liste des touches valides
     let filteredPressedKeys = filter (`elem` validKeys) pressedKeys
-    let updatedBuffer = nub $ (pressedBuffer ++ filteredPressedKeys) \\ releasedKeys
+    -- supprime les touches relachées du buffer des touches pressées
+    let updatedBuffer = nub (pressedBuffer ++ filteredPressedKeys) \\ releasedKeys
     let detectedReleasedKeys = filter (`elem` validKeys) releasedKeys
 
     let combos_init = states stateMachine
+    -- recupere les noms des touches relachées
     let releasedKeyNames = getKeyName detectedReleasedKeys stateMachine
     let maxComboLen = maximum (map (\c -> length c - 1) combos_init)
     let trimToMax xs = drop (length xs - maxComboLen) xs
@@ -30,10 +33,11 @@ handleEvents stateMachine pressedBuffer stepBuffer combos debug = do
     let mKeyPressed = KeycodeM `elem` releasedKeys
     let newDebug = if mKeyPressed then not debug else debug
 
+    -- Essaye d'ajouter la liste des touches relachées au buffer courant si non vide
     let tryBuffer = if not (null releasedKeyNames) then trimToMax (stepBuffer ++ [releasedKeyNames]) else stepBuffer
 
-    -- Vérifier si le buffer courant est préfixe d'un combo 
-    let isValid buf = any (\combo -> buf `isStepPrefixOf` (init combo)) combos_init
+    -- Vérifier si le buffer courant est préfixe d'un combo avec isStepPrefixOf pour chaque combo de combos_init
+    let isValid buf = any (\combo -> isStepPrefixOf buf (init combo)) combos_init
     let appendAndTrim xs x = trimToMax (xs ++ [x])
     let newStepBuffer
             | null releasedKeyNames = stepBuffer
@@ -43,12 +47,15 @@ handleEvents stateMachine pressedBuffer stepBuffer combos debug = do
     -- Affichage
     let nextCombos = combos
 
+    -- pour eviter une surcharge CPU inutile
     delay 25
 
     if not (null releasedKeyNames)
         then do
+            -- recuperation des toutes les possibilites de combos
             let nextCombos = nextCombosDisplay newStepBuffer combos
 
+            -- filtrage des combos qui matchent (qui sont finis)
             let matchedCombos = filter
                     (\combo ->
                         length combo == 1 &&
@@ -60,10 +67,11 @@ handleEvents stateMachine pressedBuffer stepBuffer combos debug = do
                     putStrLn $ "Released key names: " ++ show releasedKeyNames
                     putStrLn $ "Combos: " ++ show combos
                     putStrLn $ "New Step Buffer: " ++ show newStepBuffer
-                    putStrLn "Prochaines transitions possibles :"
+                    putStrLn $ "Prochaines transitions possibles :"
                     mapM_ print nextCombos
                     putStrLn $ "Matched Combos: " ++ show matchedCombos
                 else return ()
+                -- si un combo est matché, affiche le nom du combo en majuscule et en couleur
             if not (null matchedCombos)
                 then do
                     let finals = map (last . last) matchedCombos
