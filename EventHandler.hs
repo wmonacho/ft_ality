@@ -64,12 +64,12 @@ handleEvents stateMachine pressedBuffer stepBuffer combos debug = do
                     nextCombos
             if debug
                 then do
-                    putStrLn $ "Released key names: " ++ show releasedKeyNames
-                    putStrLn $ "Combos: " ++ show combos
-                    putStrLn $ "New Step Buffer: " ++ show newStepBuffer
-                    putStrLn $ "Prochaines transitions possibles :"
+                    putStrLn  ("Released key names: " ++ show releasedKeyNames)
+                    putStrLn ("Combos: " ++ show combos)
+                    putStrLn  ("New Step Buffer: " ++ show newStepBuffer)
+                    putStrLn  ("Prochaines transitions possibles :")
                     mapM_ print nextCombos
-                    putStrLn $ "Matched Combos: " ++ show matchedCombos
+                    putStrLn  ("Matched Combos: " ++ show matchedCombos)
                 else return ()
                 -- si un combo est matché, affiche le nom du combo en majuscule et en couleur
             if not (null matchedCombos)
@@ -77,7 +77,7 @@ handleEvents stateMachine pressedBuffer stepBuffer combos debug = do
                     let finals = map (last . last) matchedCombos
                     mapM_ (\final ->
                         if final `elem` final_states stateMachine
-                            then putStrLn $ rainbow (map toUpper final)
+                            then putStrLn  (rainbow (map toUpper final))
                             else return ()
                         ) finals
                 else return ()                                                              
