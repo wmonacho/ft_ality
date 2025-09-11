@@ -24,6 +24,7 @@ runProgram :: FilePath -> IO ()
 runProgram file = do
     h <- openFile file ReadMode
     processed_key <- processKeys h
+    -- KeyName and KeyCode are getters functions
     hasDuplicateNames (map keyName processed_key)
     hasDuplicateKeys (map keyCode processed_key)
     processed_combo <- processCombos h
@@ -31,15 +32,13 @@ runProgram file = do
     let moves = generateMoves processed_combo
     validateNestedMoves ((map keyName processed_key) ++ finals) moves
     let state_machine = StateMachine processed_key moves finals
-    let combos_init = states state_machine
     hClose h
     initializeAll
     putStrLn "Key maps:"
     printKeyMaps processed_key
     window <- createWindow "Key Input Detector" defaultWindow
-    appLoop state_machine [] [] combos_init False
+    appLoop state_machine [] moves False
     destroyWindow window
-    quit
     quit
 
 main :: IO ()
@@ -49,6 +48,6 @@ main = do
         [file] -> do
             result <- try (runProgram file) :: IO (Either SomeException ())
             case result of
-                Left e  -> putStrLn $ "An error occurred: " ++ show e
+                Left e  -> putStrLn ("An error occurred: " ++ show e)
                 Right _ -> return ()
         _ -> putStrLn "Usage: ./ft_ality <input_file>"

@@ -7,17 +7,19 @@ import Data.List.Split (splitOn)
 import Data.Char (isSpace, isAlphaNum)
 
 removeAllWhitespace :: String -> String
-removeAllWhitespace = f . f
-    where f = reverse . dropWhile isSpace
+removeAllWhitespace str = filter (\c -> not (isSpace c)) str
 
 removeSpacesAroundSpecials :: String -> String
-removeSpacesAroundSpecials = go Nothing
+removeSpacesAroundSpecials line = go Nothing line -- Call go with Nothing bcs there is no previous char
   where
     specials = "+,="
-    isSpecial c = c `elem` specials
+    isSpecial c = elem c specials
+    --  Definiton of the function go
+    --  first parameter is "Maybe" bcs it can be empty with the Keyword Nothing
     go :: Maybe Char -> String -> String
     go _ [] = []
     go prev (c:cs)
+    --  Ignore spaces
       | isSpace c =
           case (prev, cs) of
             (Just p, n:_) | isSpecial p -> go prev cs
@@ -52,6 +54,7 @@ parseCombos line = do
     case cleaned of
         [combo_name, rest] -> do
             let final_splited = map (splitOn "+") (splitOn "," rest)
+            --                                                          if any of the sublist is null
             if null combo_name || not (all isAlphaNum combo_name) || any (any null) final_splited then error ("Invalid line format: " ++ line)
             else return (combo_name, final_splited ++ [[combo_name]])
         _ -> error ("Invalid line format: " ++ line)
@@ -75,6 +78,7 @@ processCombos h = do
         then return []
     else do
         line <- hGetLine h
+        -- check if line is empty
         if null (removeAllWhitespace line)
             then processCombos h
             else do
@@ -104,6 +108,7 @@ hasDuplicateKeys xs =
         then error ("Duplicated Key code " ++ xs)
         else return ()
 
+--  Check if the move is legal
 validateNestedMoves :: [String] -> [[[String]]] -> IO ()
 validateNestedMoves valid_names nested = do
     let used_names = concatMap concat nested

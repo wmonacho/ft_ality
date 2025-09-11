@@ -9,8 +9,10 @@ import Utils
 import Data.List (nub, (\\), isPrefixOf)
 import Data.Char (toUpper)
 
-handleEvents :: StateMachine -> [Keycode] -> [[String]] -> [[[String]]] -> Bool -> IO ([Keycode], Bool, [[String]], [[[String]]], Bool)
-handleEvents stateMachine pressedBuffer stepBuffer combos debug = do
+type ComboProgress = [Int] -- Un index par combo
+
+handleEvents :: StateMachine -> [[String]] -> [[[String]]] -> Bool -> IO (Bool, [[String]], [[[String]]], Bool)
+handleEvents stateMachine stepBuffer combos debug = do
     events <- pollEvents
     let quitEvent = any isQuitEvent events
     let validKeys = map (charToKeycode . keyCode) (keys stateMachine)
@@ -20,34 +22,22 @@ handleEvents stateMachine pressedBuffer stepBuffer combos debug = do
 
     -- verifie que les touches pressées sont dans la liste des touches valides
     let filteredPressedKeys = filter (`elem` validKeys) pressedKeys
-    -- supprime les touches relachées du buffer des touches pressées
-    let updatedBuffer = nub (pressedBuffer ++ filteredPressedKeys) \\ releasedKeys
     let detectedReleasedKeys = filter (`elem` validKeys) releasedKeys
 
     let combos_init = states stateMachine
     -- recupere les noms des touches relachées
     let releasedKeyNames = getKeyName detectedReleasedKeys stateMachine
     let maxComboLen = maximum (map (\c -> length c - 1) combos_init)
-    let trimToMax xs = drop (length xs - maxComboLen) xs
 
-    let mKeyPressed = KeycodeM `elem` releasedKeys
+    let mKeyPressed = elem KeycodeM releasedKeys
     let newDebug = if mKeyPressed then not debug else debug
 
-    -- Essaye d'ajouter la liste des touches relachées au buffer courant si non vide
-    let tryBuffer = if not (null releasedKeyNames) then trimToMax (stepBuffer ++ [releasedKeyNames]) else stepBuffer
-
-    -- Vérifier si le buffer courant est préfixe d'un combo avec isStepPrefixOf pour chaque combo de combos_init
-    let isValid buf = any (\combo -> isStepPrefixOf buf (init combo)) combos_init
-    let appendAndTrim xs x = trimToMax (xs ++ [x])
-    let newStepBuffer
-            | null releasedKeyNames = stepBuffer
-            | isValid tryBuffer     = tryBuffer
-            | otherwise             = appendAndTrim stepBuffer releasedKeyNames
-
+    let trimToMax xs = drop (length xs - maxComboLen) xs
+    -- Essaye d'ajouter la liste des touches relachées au buffer courant si non vide et la trim si besoin
+    let newStepBuffer = if not (null releasedKeyNames) then trimToMax (stepBuffer ++ [releasedKeyNames]) else stepBuffer
     -- Affichage
     let nextCombos = combos
 
-    -- pour eviter une surcharge CPU inutile
     delay 25
 
     if not (null releasedKeyNames)
@@ -64,37 +54,38 @@ handleEvents stateMachine pressedBuffer stepBuffer combos debug = do
                     nextCombos
             if debug
                 then do
-                    putStrLn  ("Released key names: " ++ show releasedKeyNames)
+                    putStrLn ("Released key names: " ++ show releasedKeyNames)
                     putStrLn ("Combos: " ++ show combos)
-                    putStrLn  ("New Step Buffer: " ++ show newStepBuffer)
-                    putStrLn  ("Prochaines transitions possibles :")
+                    putStrLn ("New Step Buffer: " ++ show newStepBuffer)
+                    putStrLn "Prochaines transitions possibles :"
                     mapM_ print nextCombos
-                    putStrLn  ("Matched Combos: " ++ show matchedCombos)
-                else return ()
-                -- si un combo est matché, affiche le nom du combo en majuscule et en couleur
+                    putStrLn ("Matched Combos: " ++ show matchedCombos)
+                else putStrLn ("Pressed: " ++ show releasedKeyNames)
+
+            -- si un combo est matché, affiche le nom du combo en majuscule et en couleur
             if not (null matchedCombos)
                 then do
                     let finals = map (last . last) matchedCombos
                     mapM_ (\final ->
                         if final `elem` final_states stateMachine
-                            then putStrLn  (rainbow (map toUpper final))
+                            then putStrLn (rainbow (map toUpper final))
                             else return ()
                         ) finals
-                else return ()                                                              
+                else return ()
         else return ()
-    return (updatedBuffer, quitEvent, newStepBuffer, nextCombos, newDebug)
+    return (quitEvent, newStepBuffer, nextCombos, newDebug)
 
 isQuitEvent :: Event -> Bool
 isQuitEvent event =
     case eventPayload event of
-        QuitEvent -> True                                                                                                                                                                                                                                                                                                                                                                                                   
+        QuitEvent -> True
         KeyboardEvent keyboardEvent ->
             keysymKeycode (keyboardEventKeysym keyboardEvent) == KeycodeEscape
         _ -> False
 
-appLoop :: StateMachine -> [Keycode] -> [[String]] -> [[[String]]] -> Bool -> IO ()
-appLoop stateMachine pressedBuffer stepBuffer combos_init debug  = do
-    (updatedBuffer, quit, newStepBuffer, combos, debug) <- handleEvents stateMachine pressedBuffer stepBuffer combos_init debug 
+appLoop :: StateMachine -> [[String]] -> [[[String]]] -> Bool -> IO ()
+appLoop stateMachine stepBuffer combos_init debug  = do
+    ( quit, newStepBuffer, combos, debug) <- handleEvents stateMachine stepBuffer combos_init debug 
     if quit
         then putStrLn "Quit event detected. Exiting..."
-        else appLoop stateMachine updatedBuffer newStepBuffer combos debug
+        else appLoop stateMachine newStepBuffer combos debug
